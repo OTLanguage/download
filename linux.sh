@@ -8,6 +8,17 @@ file_check="${HOME}/.otl/otl"
 download() {
     rm -rf .otl
     git clone https://github.com/OTLanguage/.otl.git
+
+    module_zip="${HOME}/.otl/run-tool/lib/modules.zip"
+    unzip "${module_zip}" -d "${HOME}/.otl/run-tool/lib"
+    if [ -e "${HOME}/.otl/run-tool/lib/modules" ]; then
+      rm -f "${module_zip}"
+    else
+      echo "modules 생성에 실패하였습니다."
+      rm -rf .otl
+      exit 0
+    fi
+
     chmod +x "${HOME}/.otl/otl"
     # shellcheck disable=SC2006
     file=`cat ~/.bashrc`
