@@ -34,16 +34,8 @@ download() {
 if [ -d "$dir_check" ]; then
   if [ -f "$file_check" ]; then
     echo "이미 설치되어 있습니다."
-      echo "1) 최신 버전으로 재설치"
-      echo "2) 취소"
-      # shellcheck disable=SC2162
-      read menu
-      # shellcheck disable=SC2039
-      if [ "$menu" == 1 ]; then
-        download
-      else
-        exit 0
-      fi
+    echo "최신 버전으로 재설치됩니다."
+    download
   else
     echo "${HOME}/.otl 경로는 otl에서 사용하는 경로 입니다. 해당 디렉토리를 이름 변경이나 이동해주세요."
   fi
