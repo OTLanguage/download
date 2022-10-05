@@ -5,6 +5,9 @@ cd "${HOME}"
 dir_check="${HOME}/.otl"
 file_check="${HOME}/.otl/otl"
 download_version="$1"
+echo $0
+echo $1
+echo $2
 
 download() {
     echo "재설치를 위해 삭제합니다."
