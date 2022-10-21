@@ -11,6 +11,7 @@ download() {
     rm -rf .otl
     if [ -z "$download_version" ]; then
       git clone https://github.com/OTLanguage/.otl.git
+      rm -r ${HOME}/.otl/.git
       module_zip="${HOME}/.otl/run-tool/lib/modules.zip"
       unzip "${module_zip}" -d "${HOME}/.otl/run-tool/lib"
       if [ -e "${HOME}/.otl/run-tool/lib/modules" ]; then
@@ -22,7 +23,6 @@ download() {
     else
       if [[ $download_version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
         git clone -b "$download_version" --single-branch https://github.com/OTLanguage/.otl.git
-        rm -r ${HOME}/.otl/.git
       else
           echo "버전 형태가 일치하지 않습니다."
           exit 0
