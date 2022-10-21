@@ -11,6 +11,7 @@ download() {
     rm -rf .otl
     if [ -z "$download_version" ]; then
       git clone https://github.com/OTLanguage/.otl.git
+      rm -r ${HOME}/.otl/.git
       module_zip="${HOME}/.otl/run-tool/lib/modules.zip"
       unzip "${module_zip}" -d "${HOME}/.otl/run-tool/lib"
       if [ -e "${HOME}/.otl/run-tool/lib/modules" ]; then
