@@ -1,16 +1,5 @@
 #!/bin/sh
 
-# shellcheck disable=SC2164,SC2034,SC2168,SC2081,SC2016,SC2006
-OTL_HOME="${HOME}/.otl"
-
-# shellcheck disable=SC2089,SC2090
-file=`cat ~/.bashrc`
-otl_home='export OTL_HOME="${HOME}/.otl"'
-# shellcheck disable=SC2039
-if [[ "${file}" != *"${otl_home}"* ]]; then
-  echo "$otl_home" >>  ~/.bashrc
-fi
-
 # shellcheck disable=SC2164,SC2034
 cd "${HOME}"
 dir_check="${HOME}/.otl"
@@ -43,12 +32,13 @@ download() {
 
     if [ -f "${HOME}/.otl/otl" ]; then
       chmod +x "${HOME}/.otl/otl"
-      # shellcheck disable=SC2006,SC2016
+      # shellcheck disable=SC2006
       file=`cat ~/.bashrc`
-      zs_value='alias otl="sh ${HOME}/.otl/otl"'
+      zs_value=alias otl="sh ${HOME}/.otl/otl"
       # shellcheck disable=SC2039,SC2081
-      if [[ "${file}" != *"${zs_value}"* ]]; then
-        echo "${zs_value}" >>  ~/.bashrc
+      if [ "${file}" != *"${zs_value}"* ]; then
+        # shellcheck disable=SC2016
+        echo 'alias otl="sh ${HOME}/.otl/otl"' >>  ~/.bashrc
       fi
       echo "설치가 완료되었습니다. 터미널을 재시작하시면 세팅이 적용됩니다."
     else
