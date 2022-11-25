@@ -42,7 +42,7 @@ download() {
       chmod +x "${OTL_HOME}/otl"
       # shellcheck disable=SC2006
       file=`cat ~/.zshrc`
-      zs_value='alias otl="sh ${HOME}/.otl/otl"'
+      zs_value='alias otl="sh ${OTL_HOME}/otl"'
       # shellcheck disable=SC2039,SC2081
       if [[ "${file}" != *"${zs_value}"* ]]; then
         echo "$zs_value" >>  ~/.zshrc
