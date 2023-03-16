@@ -2,8 +2,6 @@
 
 OTL_HOME="${HOME}/.otl"
 
-sed -i '/*export OTL_HOME*/' test.txt
-
 case $SHELL in
   "/bin/bash"|"bash")
     ALIAS=~/.bashrc
@@ -19,15 +17,17 @@ esac
 
 if [[ `cat $ALIAS` != *'export OTL_HOME'* ]]; then
   echo 'export OTL_HOME="${HOME}/.otl"' >> $ALIAS
+  export OTL_HOME="${HOME}/.otl"
 fi
 
 cd "${HOME}"
 
 download() {
-  echo "재설치를 위해 삭제합니다."
-  rm -rf .otl
-  git clone https://github.com/OTLanguage/.otl.git
-  rm -r "${OTL_HOME}"/.git
+  if [ -f "${OTL_HOME}/otl" ]; then
+    echo "재설치를 위해 삭제합니다."
+    rm -rf .otl
+  fi  
+  git clone https://github.com/OTLanguage/.otl.git  
   MODULE_ZIP="${OTL_HOME}/run-tool/lib/modules.zip"
   unzip "${MODULE_ZIP}" -d "${OTL_HOME}/run-tool/lib"
   if [ -e "${OTL_HOME}/run-tool/lib/modules" ]; then
@@ -41,6 +41,7 @@ download() {
     chmod +x "${OTL_HOME}/otl"
     if [[ `cat $ALIAS` != *'alias otl'* ]]; then
       echo 'alias otl="sh ${OTL_HOME}/otl"' >> $ALIAS
+      alias otl="sh ${OTL_HOME}/otl"
     fi
     echo "설치가 완료되었습니다. 터미널을 재시작하시면 세팅이 적용됩니다."
   else
