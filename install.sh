@@ -26,9 +26,10 @@ download() {
   if [ -f "${OTL_HOME}/otl" ]; then
     echo "재설치를 위해 삭제합니다."
     rm -rf .otl
-  fi  
-  git clone https://github.com/OTLanguage/.otl.git  
+  fi
+  git clone https://github.com/OTLanguage/.otl.git
   MODULE_ZIP="${OTL_HOME}/run-tool/lib/modules.zip"
+  rm -rf .git
   unzip "${MODULE_ZIP}" -d "${OTL_HOME}/run-tool/lib"
   if [ -e "${OTL_HOME}/run-tool/lib/modules" ]; then
     rm -f "${MODULE_ZIP}"
