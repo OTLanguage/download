@@ -29,7 +29,7 @@ download() {
   fi
   git clone https://github.com/OTLanguage/.otl.git
   MODULE_ZIP="${OTL_HOME}/run-tool/lib/modules.zip"
-  rm -rf .git
+  rm -r ${OTL_HOME}/.git
   unzip "${MODULE_ZIP}" -d "${OTL_HOME}/run-tool/lib"
   if [ -e "${OTL_HOME}/run-tool/lib/modules" ]; then
     rm -f "${MODULE_ZIP}"
