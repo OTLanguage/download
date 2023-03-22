@@ -1,63 +1,157 @@
 #!/bin/bash
 
-OTL_HOME="${HOME}/.otl"
-
 case $SHELL in
-  "/bin/bash"|"bash")
-    ALIAS=~/.bashrc
-    ;;
-  "/bin/zsh"|"zsh")
-    ALIAS=~/.zshrc
-    ;;
+  "/bin/bash"|"bash") ALIAS=~/.bashrc ;;
+  "/bin/zsh"|"zsh") ALIAS=~/.zshrc ;;
   *)
     echo "지원하지 않는 Shell 입니다."
     exit 0
     ;;
 esac
 
-if [[ `cat $ALIAS` != *'export OTL_HOME'* ]]; then
-  echo 'export OTL_HOME="${HOME}/.otl"' >> $ALIAS
-  export OTL_HOME="${HOME}/.otl"
+# set variable
+# shellcheck disable=SC2006 disable=SC2016
+if [ -z "${OTL_HOME}" ]; then
+  OTL_HOME="${HOME}/.otl"
+  if [[ `cat $ALIAS` != *'export OTL_HOME'* ]]; then
+    echo 'export OTL_HOME="${HOME}/.otl"' >> $ALIAS
+    export OTL_HOME="${HOME}/.otl"
+  fi
 fi
 
-cd "${HOME}"
+# shellcheck disable=SC2164
+run_tool_download() {
+  if [ -d "${OTL_HOME}/run-tool" ]; then
+    rm -rf "${OTL_HOME}/run-tool"
+  fi
+  wget https://github.com/OTLanguage/download-tool/raw/main/run-tool/run-tool.zip -P "${OTL_HOME}/run-tool"
+  wget https://github.com/OTLanguage/download-tool/raw/main/run-tool/lib/lib.zip -P "${OTL_HOME}/run-tool/lib"
+  wget https://github.com/OTLanguage/download-tool/raw/main/run-tool/lib/modules.zip -P "${OTL_HOME}/run-tool/lib"
+  unzip "${OTL_HOME}/run-tool/run-tool.zip" -d "${OTL_HOME}"
+  unzip "${OTL_HOME}/run-tool/lib/lib.zip" -d "${OTL_HOME}/run-tool/lib"
+  unzip "${OTL_HOME}/run-tool/lib/modules.zip" -d "${OTL_HOME}/run-tool/lib"
+  rm "${OTL_HOME}/run-tool/run-tool.zip"
+  rm "${OTL_HOME}/run-tool/lib/lib.zip"
+  rm "${OTL_HOME}/run-tool/lib/modules.zip"
+}
 
-download() {
-  if [ -f "${OTL_HOME}/otl" ]; then
-    echo "재설치를 위해 삭제합니다."
-    rm -rf .otl
-  fi
-  git clone https://github.com/OTLanguage/.otl.git
-  MODULE_ZIP="${OTL_HOME}/run-tool/lib/modules.zip"
-  rm -r ${OTL_HOME}/.git
-  unzip "${MODULE_ZIP}" -d "${OTL_HOME}/run-tool/lib"
-  if [ -e "${OTL_HOME}/run-tool/lib/modules" ]; then
-    rm -f "${MODULE_ZIP}"
+run_tool_check() {
+  if [ ! -e "${OTL_HOME}/run-tool" ]; then
+    echo "pass"
+    false
   else
-    echo "modules 생성에 실패하였습니다."
-    exit 0
-  fi
-  
-  if [ -f "${OTL_HOME}/otl" ]; then
-    chmod +x "${OTL_HOME}/otl"
-    if [[ `cat $ALIAS` != *'alias otl'* ]]; then
-      echo 'alias otl="sh ${OTL_HOME}/otl"' >> $ALIAS
-      alias otl="sh ${OTL_HOME}/otl"
-    fi
-    echo "설치가 완료되었습니다. 터미널을 재시작하시면 세팅이 적용됩니다."
-  else
-    echo "설치에 실패하였습니다."
+    FILES=("man/man1/javap.1" "man/man1/jdeprscan.1" "man/man1/jpackage.1" "man/man1/serialver.1" "man/man1/jshell.1" "man/man1/jstatd.1" "man/man1/jdb.1" "man/man1/jabswitch.1" "man/man1/java.1" "man/man1/ktab.1" "man/man1/keytool.1" "man/man1/jmod.1" "man/man1/jaccesswalker.1" "man/man1/jstat.1" "man/man1/jcmd.1" "man/man1/jfr.1" "man/man1/jdeps.1" "man/man1/jhsdb.1" "man/man1/jconsole.1")
+    FILES+=("man/man1/jar.1" "man/man1/jaccessinspector.1" "man/man1/javadoc.1" "man/man1/jstack.1" "man/man1/jrunscript.1" "man/man1/kinit.1" "man/man1/jmap.1" "man/man1/rmiregistry.1" "man/man1/jinfo.1" "man/man1/klist.1" "man/man1/jlink.1" "man/man1/javac.1" "man/man1/jps.1" "man/man1/jarsigner.1" "bin/jarsigner" "bin/jfr" "bin/otl" "bin/jdb" "bin/jstack")
+    FILES+=("bin/rmiregistry" "bin/jar" "bin/jcmd" "bin/jrunscript" "bin/jps" "bin/java" "bin/jhsdb" "bin/javap" "bin/jdeprscan" "bin/javac" "bin/keytool" "bin/jmod" "bin/jmap" "bin/jshell" "bin/jstat" "bin/jlink" "bin/serialver" "bin/javadoc" "bin/jinfo" "bin/jstatd")
+    FILES+=("bin/jdeps" "bin/jconsole" "bin/jpackage" "bin/jimage" "include/jawt.h" "include/classfile_constants.h" "include/jdwpTransport.h" "include/jvmti.h" "include/jni.h" "include/jvmticmlr.h" "include/darwin/jni_md.h" "include/darwin/jawt_md.h" "lib/libnet.dylib" "lib/libnio.dylib" "lib/libinstrument.dylib" "lib/libzip.dylib" "lib/psfontj2d.properties" "lib/fontconfig.properties.src" "lib/libfreetype.dylib" "lib/libjli.dylib")
+    FILES+=("lib/security/blocked.certs" "lib/jfr/default.jfc" "lib/jfr/profile.jfc" "lib/shaders.metallib" "lib/libosxkrb5.dylib" "lib/libosxui.dylib" "lib/tzdb.dat" "lib/libmanagement_agent.dylib" "lib/librmi.dylib" "lib/libjdwp.dylib" "lib/libsplashscreen.dylib" "lib/libmanagement_ext.dylib" "lib/libdt_socket.dylib" "lib/libj2pkcs11.dylib" "lib/jvm.cfg" "lib/libjimage.dylib" "lib/security/public_suffix_list.dat" "lib/security/default.policy" "lib/security/cacerts")
+    FILES+=("lib/libj2pcsc.dylib" "lib/libjsig.dylib" "lib/libprefs.dylib" "lib/libsyslookup.dylib" "lib/libjawt.dylib" "lib/libattach.dylib" "lib/jrt-fs.jar" "lib/libfontmanager.dylib" "lib/fontconfig.bfc" "lib/src.zip" "lib/libawt_lwawt.dylib" "lib/server/classes_nocoops.jsa" "lib/server/libjvm.dylib" "lib/server/classes.jsa" "lib/server/libjsig.dylib" "lib/libjavajpeg.dylib" "lib/libmlib_image.dylib" "lib/libmanagement.dylib" "lib/libjsound.dylib" "lib/ct.sym")
+    FILES+=("lib/jspawnhelper" "lib/libosxsecurity.dylib" "lib/libextnet.dylib" "lib/libjaas.dylib" "lib/liblcms.dylib" "lib/libverify.dylib" "lib/psfont.properties.ja" "lib/libj2gss.dylib" "lib/libsaproc.dylib" "lib/modules" "lib/classlist" "lib/libjava.dylib" "lib/libawt.dylib" "lib/libosx.dylib" "lib/libosxapp.dylib" "conf/logging.properties" "conf/sound.properties" "conf/security/java.security" "conf/security/java.policy")
+    FILES+=("conf/security/policy/unlimited/default_US_export.policy" "conf/security/policy/unlimited/default_local.policy" "conf/security/policy/README.txt" "conf/security/policy/limited/default_US_export.policy" "conf/security/policy/limited/exempt_local.policy" "conf/security/policy/limited/default_local.policy" "conf/net.properties" "conf/management/jmxremote.access" "conf/management/management.properties" "conf/management/jmxremote.password.template")
+    FILES+=("jmods/java.security.sasl.jmod" "jmods/jdk.jartool.jmod" "jmods/java.se.jmod" "jmods/jdk.zipfs.jmod" "jmods/jdk.jdeps.jmod" "jmods/jdk.jstatd.jmod" "jmods/jdk.jdwp.agent.jmod" "jmods/java.sql.jmod" "jmods/jdk.incubator.foreign.jmod" "jmods/java.smartcardio.jmod")
+    FILES+=("jmods/jdk.hotspot.agent.jmod" "jmods/jdk.internal.jvmstat.jmod" "jmods/java.compiler.jmod" "jmods/jdk.incubator.vector.jmod" "jmods/java.sql.rowset.jmod" "jmods/jdk.jfr.jmod" "jmods/jdk.jpackage.jmod" "jmods/jdk.crypto.cryptoki.jmod" "jmods/jdk.internal.vm.compiler.jmod" "jmods/jdk.unsupported.desktop.jmod")
+    FILES+=("jmods/jdk.management.jmod" "jmods/java.rmi.jmod" "jmods/jdk.management.jfr.jmod" "jmods/jdk.sctp.jmod" "jmods/jdk.security.jgss.jmod" "jmods/jdk.internal.vm.compiler.management.jmod" "jmods/jdk.net.jmod" "jmods/java.prefs.jmod" "jmods/java.logging.jmod" "jmods/jdk.xml.dom.jmod")
+    FILES+=("jmods/java.base.jmod" "jmods/java.xml.crypto.jmod" "jmods/java.naming.jmod" "jmods/jdk.internal.ed.jmod" "jmods/jdk.naming.dns.jmod" "jmods/java.datatransfer.jmod" "jmods/jdk.unsupported.jmod" "jmods/jdk.jlink.jmod" "jmods/jdk.charsets.jmod" "jmods/jdk.localedata.jmod")
+    FILES+=("jmods/jdk.jcmd.jmod" "jmods/java.desktop.jmod" "jmods/jdk.accessibility.jmod" "jmods/jdk.attach.jmod" "jmods/java.management.rmi.jmod" "jmods/java.transaction.xa.jmod" "jmods/jdk.jshell.jmod" "jmods/java.xml.jmod" "jmods/java.management.jmod" "jmods/jdk.internal.opt.jmod")
+    FILES+=("jmods/jdk.httpserver.jmod" "jmods/java.net.http.jmod" "jmods/jdk.random.jmod" "jmods/jdk.compiler.jmod" "jmods/jdk.internal.le.jmod" "jmods/java.instrument.jmod" "jmods/jdk.dynalink.jmod" "jmods/jdk.management.agent.jmod" "jmods/jdk.internal.vm.ci.jmod" "jmods/jdk.security.auth.jmod")
+    FILES+=("jmods/java.scripting.jmod" "jmods/jdk.jdi.jmod" "jmods/jdk.crypto.ec.jmod" "jmods/jdk.naming.rmi.jmod" "jmods/jdk.jconsole.jmod" "jmods/jdk.javadoc.jmod" "jmods/jdk.editpad.jmod" "jmods/jdk.jsobject.jmod" "jmods/java.security.jgss.jmod" "jmods/jdk.nio.mapmode.jmod")
+    VALUE=true
+    for file in "${FILES[@]}"
+    do
+      if [ ! -e "${OTL_HOME}/run-tool/$file" ]; then
+        VALUE=false
+        break
+      fi
+    done
+    $VALUE
   fi
 }
 
-if [ -d "${OTL_HOME}" ]; then
-  if [ -f "${OTL_HOME}/otl" ]; then
-    echo "이미 설치되어 있습니다."
-    echo "재설치를 시작합니다."
-    download
+# shellcheck disable=SC2164
+analyzer_download() {
+  rm -rf "${OTL_HOME}/analyzer"
+  wget https://github.com/OTLanguage/download-tool/raw/main/analyzer.zip -P "${OTL_HOME}"
+  unzip "${OTL_HOME}/analyzer.zip" -d "${OTL_HOME}/analyzer"
+  rm "${OTL_HOME}/analyzer.zip"
+
+  rm "${OTL_HOME}/otl"
+  wget https://raw.githubusercontent.com/OTLanguage/.otl/main/otl -P "${OTL_HOME}"
+  chmod +x "${OTL_HOME}/otl"
+  touch "${OTL_HOME}/system.otls"
+  mkdir "${OTL_HOME}/module"
+  mkdir "${OTL_HOME}/analyzer/cos"
+}
+
+# shellcheck disable=SC2006 disable=SC2162
+sub_download() {
+  TYPE=""
+  FILE_CONTENT=""
+  if [[ `cat "${OTL_HOME}/system.otls"` == *${1}:* ]]; then
+    CHECK=""
+    while read line || [ -n "$line" ] ; do
+      if [ -z "$line" ]; then
+        continue
+      elif [[ "$line" == *: ]]; then
+        if [[ "$line" == ${1}: ]]; then
+          CHECK="1"
+        else
+          CHECK=""
+          FILE_CONTENT+="${line}${IFS}"
+        fi
+      elif [ "${CHECK}" = "" ]; then
+        FILE_CONTENT+="    ${line}${IFS}"
+      fi
+    done < "${OTL_HOME}/system.otls"
   else
-    echo "${OTL_HOME} 경로는 otl에서 사용하는 경로 입니다. 해당 디렉토리를 이름 변경이나 이동해주세요."
+    FILE_CONTENT=$(<"${OTL_HOME}/system.otls")
   fi
+
+  rm -rf "${OTL_HOME}/analyzer/cos/${1}"
+  rm -rf "${OTL_HOME}/module/${1}"
+  FILE_CONTENT+="${IFS}${1}:${IFS}"
+  for line in $(curl -L https://raw.githubusercontent.com/OTLanguage/module/main/"${1}"/system.otls)
+  do
+    if [[ "$line" == *: ]]; then
+      TYPE="${line:0:${#line}-1}"
+    elif [ -z "$TYPE" ] || [ -z "$line" ]; then
+      continue
+    else
+      case "$TYPE" in
+        "class")
+          FILE_PATH="${OTL_HOME}"/analyzer/cos/$(echo "$line" | sed -e "s/~/\//g")
+          FILE_NAME=$(basename "$FILE_PATH")
+          DOWNLOAD_PATH="${FILE_PATH:0:${#FILE_PATH}-${#FILE_NAME}-1}"
+          wget https://github.com/OTLanguage/module/raw/main/"${1}"/"${FILE_NAME}" -P "${DOWNLOAD_PATH}"
+          ;;
+
+        "jar")
+          FILE_PATH="${OTL_HOME}/module/${1}/${line}"
+          FILE_NAME=$(basename "$FILE_PATH")
+          DOWNLOAD_PATH="${FILE_PATH:0:${#FILE_PATH}-${#FILE_NAME}-1}"
+          wget https://github.com/OTLanguage/module/raw/main/"${1}"/"${FILE_NAME}" -P "${DOWNLOAD_PATH}"
+          FILE_CONTENT+="    ${FILE_NAME}${IFS}"
+          ;;
+
+        "other")
+          FILE_PATH="${OTL_HOME}/module/${1}/${line}"
+          FILE_NAME=$(basename "$FILE_PATH")
+          DOWNLOAD_PATH="${FILE_PATH:0:${#FILE_PATH}-${#FILE_NAME}-1}"
+          wget https://github.com/OTLanguage/module/raw/main/"${1}"/"${FILE_NAME}" -P "${DOWNLOAD_PATH}"
+          ;;
+      esac
+    fi
+  done
+  echo "${FILE_CONTENT}" > "${OTL_HOME}/system.otls"
+}
+
+if [ -d "${OTL_HOME}" ]; then
+  if ! run_tool_check ; then
+    echo "run_tool 이 유효하지 않으므로 재설치합니다."
+    rm -rf "${OTL_HOME}/run-tool"
+    run_tool_download
+  fi
+  analyzer_download
 else
-  download
+  run_tool_download
+  analyzer_download
 fi
