@@ -19,6 +19,15 @@ if [ -z "${OTL_HOME}" ]; then
   fi
 fi
 
+if [ -z "${otl}" ]; then
+  # shellcheck disable=SC2016
+  OTL='alias otl="sh ${OTL_HOME}/otl"'
+  # shellcheck disable=SC2039,SC2081
+  if [[ "${file}" != *"${OTL}"* ]]; then
+    echo "${OTL}" >> $ALIAS
+  fi
+fi
+
 # shellcheck disable=SC2164
 run_tool_download() {
   if [ -d "${OTL_HOME}/run-tool" ]; then
