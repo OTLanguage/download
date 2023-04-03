@@ -1,32 +1,52 @@
 #!/bin/bash
 
+abort() {
+  printf "%s\n" "$@" >&2
+  exit 1
+}
+
+# check OS
+OS="$(uname)"
+if [[ "${OS}" == "Linux" ]]; then
+    # On Linux
+    OTL_REPOSITORY="/home/linuxotl/.linuxotl/OTLanguage"
+elif [[ "${OS}" == "Darwin" ]]; then
+  if [[ "$(/usr/bin/uname -m)" == "arm64" ]]; then
+      # On ARM macOS
+      OTL_REPOSITORY="/opt/OTLanguage"
+    else
+      # On Intel macOS
+      OTL_REPOSITORY="/usr/local/OTLanguage"
+    fi
+else
+  abort "해당 다운로드는 macOS, Linux 만을 지원합니다."
+fi
+
+# Set Shell
 case $SHELL in
   "/bin/bash"|"bash") ALIAS=~/.bashrc ;;
   "/bin/zsh"|"zsh") ALIAS=~/.zshrc ;;
-  *)
-    echo "지원하지 않는 Shell 입니다."
-    exit 0
-    ;;
+  *) abort "지원하지 않는 Shell 입니다." ;;
 esac
 
-# set variable
+# set OTL_HOME
 # shellcheck disable=SC2006 disable=SC2016
 if [ -z "${OTL_HOME}" ]; then
-  OTL_HOME="${HOME}/.otl"
+  OTL_HOME="${OTL_REPOSITORY}"
   if [[ `cat $ALIAS` != *'export OTL_HOME'* ]]; then
-    echo 'export OTL_HOME="${HOME}/.otl"' >> $ALIAS
-    export OTL_HOME="${HOME}/.otl"
+    export OTL_HOME="${OTL_REPOSITORY}"
+    echo "export OTL_HOME=${OTL_HOME}" >> $ALIAS
   fi
 fi
 
-if [ -z "${otl}" ]; then
-  # shellcheck disable=SC2016
-  OTL='alias otl="sh ${OTL_HOME}/otl"'
-  # shellcheck disable=SC2039,SC2081
-  if [[ "${file}" != *"${OTL}"* ]]; then
-    echo "${OTL}" >> $ALIAS
-  fi
+# shellcheck disable=SC2006 disable=SC2016
+if [[ `cat $ALIAS` != *'export PATH="${OTL_HOME}/.otl:${PATH}"'* ]]; then
+  export PATH="${OTL_HOME}/.otl:${PATH}"
+  echo 'export PATH="${OTL_HOME}/.otl:${PATH}"' >> $ALIAS
 fi
+
+# shellcheck disable=SC1090
+source "${ALIAS}"
 
 # shellcheck disable=SC2164
 run_tool_download() {
@@ -46,7 +66,6 @@ run_tool_download() {
 
 run_tool_check() {
   if [ ! -e "${OTL_HOME}/run-tool" ]; then
-    echo "pass"
     false
   else
     FILES=("man/man1/javap.1" "man/man1/jdeprscan.1" "man/man1/jpackage.1" "man/man1/serialver.1" "man/man1/jshell.1" "man/man1/jstatd.1" "man/man1/jdb.1" "man/man1/jabswitch.1" "man/man1/java.1" "man/man1/ktab.1" "man/man1/keytool.1" "man/man1/jmod.1" "man/man1/jaccesswalker.1" "man/man1/jstat.1" "man/man1/jcmd.1" "man/man1/jfr.1" "man/man1/jdeps.1" "man/man1/jhsdb.1" "man/man1/jconsole.1")
@@ -83,74 +102,15 @@ analyzer_download() {
   unzip "${OTL_HOME}/analyzer.zip" -d "${OTL_HOME}/analyzer"
   rm "${OTL_HOME}/analyzer.zip"
 
-  rm "${OTL_HOME}/otl"
-  wget https://raw.githubusercontent.com/OTLanguage/.otl/main/otl -P "${OTL_HOME}"
-  chmod +x "${OTL_HOME}/otl"
+  rm "${OTL_HOME}/.otl/otl"
+  rm "${OTL_HOME}/.otl/oip"
+  wget https://raw.githubusercontent.com/OTLanguage/.otl/main/otl -P "${OTL_HOME}/.otl"
+  wget https://raw.githubusercontent.com/OTLanguage/.otl/main/otp -P "${OTL_HOME}/.otl"
+  chmod +x "${OTL_HOME}/.otl/otl"
+  chmod +x "${OTL_HOME}/.otl/oip"
   touch "${OTL_HOME}/system.otls"
   mkdir "${OTL_HOME}/module"
   mkdir "${OTL_HOME}/analyzer/cos"
-}
-
-# shellcheck disable=SC2006 disable=SC2162
-sub_download() {
-  TYPE=""
-  FILE_CONTENT=""
-  if [[ `cat "${OTL_HOME}/system.otls"` == *${1}:* ]]; then
-    CHECK=""
-    while read line || [ -n "$line" ] ; do
-      if [ -z "$line" ]; then
-        continue
-      elif [[ "$line" == *: ]]; then
-        if [[ "$line" == ${1}: ]]; then
-          CHECK="1"
-        else
-          CHECK=""
-          FILE_CONTENT+="${line}${IFS}"
-        fi
-      elif [ "${CHECK}" = "" ]; then
-        FILE_CONTENT+="    ${line}${IFS}"
-      fi
-    done < "${OTL_HOME}/system.otls"
-  else
-    FILE_CONTENT=$(<"${OTL_HOME}/system.otls")
-  fi
-
-  rm -rf "${OTL_HOME}/analyzer/cos/${1}"
-  rm -rf "${OTL_HOME}/module/${1}"
-  FILE_CONTENT+="${IFS}${1}:${IFS}"
-  for line in $(curl -L https://raw.githubusercontent.com/OTLanguage/module/main/"${1}"/system.otls)
-  do
-    if [[ "$line" == *: ]]; then
-      TYPE="${line:0:${#line}-1}"
-    elif [ -z "$TYPE" ] || [ -z "$line" ]; then
-      continue
-    else
-      case "$TYPE" in
-        "class")
-          FILE_PATH="${OTL_HOME}"/analyzer/cos/$(echo "$line" | sed -e "s/~/\//g")
-          FILE_NAME=$(basename "$FILE_PATH")
-          DOWNLOAD_PATH="${FILE_PATH:0:${#FILE_PATH}-${#FILE_NAME}-1}"
-          wget https://github.com/OTLanguage/module/raw/main/"${1}"/"${FILE_NAME}" -P "${DOWNLOAD_PATH}"
-          ;;
-
-        "jar")
-          FILE_PATH="${OTL_HOME}/module/${1}/${line}"
-          FILE_NAME=$(basename "$FILE_PATH")
-          DOWNLOAD_PATH="${FILE_PATH:0:${#FILE_PATH}-${#FILE_NAME}-1}"
-          wget https://github.com/OTLanguage/module/raw/main/"${1}"/"${FILE_NAME}" -P "${DOWNLOAD_PATH}"
-          FILE_CONTENT+="    ${FILE_NAME}${IFS}"
-          ;;
-
-        "other")
-          FILE_PATH="${OTL_HOME}/module/${1}/${line}"
-          FILE_NAME=$(basename "$FILE_PATH")
-          DOWNLOAD_PATH="${FILE_PATH:0:${#FILE_PATH}-${#FILE_NAME}-1}"
-          wget https://github.com/OTLanguage/module/raw/main/"${1}"/"${FILE_NAME}" -P "${DOWNLOAD_PATH}"
-          ;;
-      esac
-    fi
-  done
-  echo "${FILE_CONTENT}" > "${OTL_HOME}/system.otls"
 }
 
 if [ -d "${OTL_HOME}" ]; then
