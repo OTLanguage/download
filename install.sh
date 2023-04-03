@@ -45,9 +45,6 @@ if [[ `cat $ALIAS` != *'export PATH="${OTL_HOME}/.otl:${PATH}"'* ]]; then
   echo 'export PATH="${OTL_HOME}/.otl:${PATH}"' >> $ALIAS
 fi
 
-# shellcheck disable=SC1090
-source "${ALIAS}"
-
 # shellcheck disable=SC2164
 run_tool_download() {
   if [ -d "${OTL_HOME}/run-tool" ]; then
@@ -95,7 +92,7 @@ run_tool_check() {
   fi
 }
 
-# shellcheck disable=SC2164
+# shellcheck disable=SC2164 disable=SC1090
 analyzer_download() {
   rm -rf "${OTL_HOME}/analyzer"
   wget https://github.com/OTLanguage/download-tool/raw/main/analyzer.zip -P "${OTL_HOME}"
@@ -124,3 +121,6 @@ else
   run_tool_download
   analyzer_download
 fi
+
+# shellcheck disable=SC1090
+source "${ALIAS}"
