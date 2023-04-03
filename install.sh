@@ -105,7 +105,7 @@ analyzer_download() {
   rm "${OTL_HOME}/.otl/otl"
   rm "${OTL_HOME}/.otl/oip"
   wget https://raw.githubusercontent.com/OTLanguage/.otl/main/otl -P "${OTL_HOME}/.otl"
-  wget https://raw.githubusercontent.com/OTLanguage/.otl/main/otp -P "${OTL_HOME}/.otl"
+  wget https://raw.githubusercontent.com/OTLanguage/.otl/main/oip -P "${OTL_HOME}/.otl"
   chmod +x "${OTL_HOME}/.otl/otl"
   chmod +x "${OTL_HOME}/.otl/oip"
   touch "${OTL_HOME}/system.otls"
