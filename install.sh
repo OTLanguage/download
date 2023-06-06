@@ -40,9 +40,9 @@ if [ -z "${OTL_HOME}" ]; then
 fi
 
 # shellcheck disable=SC2006 disable=SC2016
-if [[ `cat $ALIAS` != *'export PATH="${OTL_HOME}/.otl:${PATH}"'* ]]; then
-  export PATH="${OTL_HOME}/.otl:${PATH}"
-  echo 'export PATH="${OTL_HOME}/.otl:${PATH}"' >> $ALIAS
+if [[ `cat $ALIAS` != *'export PATH="${PATH}:${OTL_HOME}/.otl"'* ]]; then
+  export PATH="${PATH}:${OTL_HOME}/.otl"
+  echo 'export PATH="${PATH}:${OTL_HOME}/.otl"' >> $ALIAS
 fi
 
 # shellcheck disable=SC2164
